@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Coke Oven Battery Delay Monitoring System
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+
+<body>
+
+
+    <!-- =====================================================
+         HEADER
+         ===================================================== -->
+
+    <header class="header">
+
+        <div>
+
+            <h1>
+                Coke Oven Battery
+            </h1>
+
+            <p>
+                Delay Monitoring System
+            </p>
+
+        </div>
+
+
+        <div class="status">
+
+            <span class="status-dot"></span>
+
+            System Online
+
+        </div>
+
+    </header>
+
+
+
+    <!-- =====================================================
+         MAIN CONTAINER
+         ===================================================== -->
+
+    <main class="container">
+
+
+        <!-- =================================================
+             DASHBOARD HEADER
+             ================================================= -->
+
+        <section class="dashboard-header">
+
+            <div>
+
+                <h2>
+                    Monitoring Dashboard
+                </h2>
+
+                <p>
+                    Overview of recorded coke oven battery
+                    delay information.
+                </p>
+
+            </div>
+
+
+            <button
+                class="refresh-button"
+                onclick="loadDashboard()"
+            >
+                Refresh Dashboard
+            </button>
+
+        </section>
+
+
+
+        <!-- =================================================
+             KPI CARDS
+             ================================================= -->
+
+        <section class="summary-grid">
+
+
+            <div class="summary-card">
+
+                <h3>
+                    Total Delay Records
+                </h3>
+
+                <p id="dashboardRecords">
+                    -
+                </p>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <h3>
+                    Total Delay
+                </h3>
+
+                <p id="dashboardDelay">
+                    -
+                </p>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <h3>
+                    Total Delay Hours
+                </h3>
+
+                <p id="dashboardHours">
+                    -
+                </p>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <h3>
+                    Average Delay
+                </h3>
+
+                <p id="dashboardAverage">
+                    -
+                </p>
+
+            </div>
+
+        </section>
+
+<!-- =================================================
+     ANALYTICS FILTERS
+     ================================================= -->
+
+<section class="filter-card">
+
+    <div class="chart-header">
+
+        <h2>
+            Analytics Filters
+        </h2>
+
+        <p>
+            Select filters to analyze recorded delay data.
+        </p>
+
+    </div>
+
+
+    <div class="filter-form">
+
+        <!-- FROM DATE -->
+
+        <div class="form-group">
+
+            <label for="analyticsStartDate">
+                From Date
+            </label>
+
+            <input
+                type="date"
+                id="analyticsStartDate"
+                min="2018-04-20"
+                max="2018-04-26"
+                value="2018-04-20"
+            >
+
+        </div>
+
+
+        <!-- TO DATE -->
+
+        <div class="form-group">
+
+            <label for="analyticsEndDate">
+                To Date
+            </label>
+
+            <input
+                type="date"
+                id="analyticsEndDate"
+                min="2018-04-20"
+                max="2018-04-26"
+                value="2018-04-26"
+            >
+
+        </div>
+
+
+        <!-- BATTERY -->
+
+        <div class="form-group">
+
+            <label for="analyticsBattery">
+                Battery
+            </label>
+
+            <select id="analyticsBattery">
+
+                <option value="">
+                    All Batteries
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <!-- MACHINE -->
+
+        <div class="form-group">
+
+            <label for="analyticsMachine">
+                Machine
+            </label>
+
+            <select id="analyticsMachine">
+
+                <option value="">
+                    All Machines
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <!-- AGENCY -->
+
+        <div class="form-group">
+
+            <label for="analyticsAgency">
+                Agency
+            </label>
+
+            <select id="analyticsAgency">
+
+                <option value="">
+                    All Agencies
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <!-- SHIFT -->
+
+        <div class="form-group">
+
+            <label for="analyticsShift">
+                Shift
+            </label>
+
+            <select id="analyticsShift">
+
+                <option value="">
+                    All Shifts
+                </option>
+
+                <option value="A">
+                    Shift A
+                </option>
+
+                <option value="B">
+                    Shift B
+                </option>
+
+                <option value="C">
+                    Shift C
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <!-- APPLY -->
+
+        <div class="form-group button-group">
+
+            <button
+                id="applyAnalyticsButton"
+                onclick="applyAnalyticsFilter()"
+            >
+                Apply Filters
+            </button>
+
+        </div>
+
+
+        <!-- RESET -->
+
+        <div class="form-group button-group">
+
+            <button
+                class="history-button"
+                onclick="resetAnalyticsFilter()"
+            >
+                Reset
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+        <!-- =================================================
+             CHART ROW 1
+             ================================================= -->
+
+        <section class="charts-grid">
+
+
+            <!-- Battery Chart -->
+
+            <div class="chart-card">
+
+                <div class="chart-header">
+
+                    <h2>
+                        Delay by Battery
+                    </h2>
+
+                    <p>
+                        Total recorded delay for each battery
+                    </p>
+
+                </div>
+
+
+                <div class="chart-container">
+
+                    <canvas
+                        id="batteryChart"
+                    ></canvas>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- Shift Chart -->
+
+            <div class="chart-card">
+
+                <div class="chart-header">
+
+                    <h2>
+                        Delay by Shift
+                    </h2>
+
+                    <p>
+                        Distribution of delay across shifts
+                    </p>
+
+                </div>
+
+
+                <div class="chart-container">
+
+                    <canvas
+                        id="shiftChart"
+                    ></canvas>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             CHART ROW 2
+             ================================================= -->
+
+        <section class="charts-grid">
+
+
+            <!-- Machine Chart -->
+
+            <div class="chart-card">
+
+                <div class="chart-header">
+
+                    <h2>
+                        Delay by Machine
+                    </h2>
+
+                    <p>
+                        Machines with recorded delays
+                    </p>
+
+                </div>
+
+
+                <div class="chart-container">
+
+                    <canvas
+                        id="machineChart"
+                    ></canvas>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- Agency Chart -->
+
+            <div class="chart-card">
+
+                <div class="chart-header">
+
+                    <h2>
+                        Delay by Agency
+                    </h2>
+
+                    <p>
+                        Recorded delay by responsible agency
+                    </p>
+
+                </div>
+
+
+                <div class="chart-container">
+
+                    <canvas
+                        id="agencyChart"
+                    ></canvas>
+
+                </div>
+
+            </div>
+
+        </section>
+
+<!-- =================================================
+     ADVANCED ANALYTICS - ROW 3
+     ================================================= -->
+
+<section class="charts-grid">
+
+    <!-- Delay Trend Chart -->
+
+    <div class="chart-card">
+
+        <div class="chart-header">
+
+            <h2>
+                Delay Trend Over Time
+            </h2>
+
+            <p>
+                Total recorded delay by date
+            </p>
+
+        </div>
+
+        <div class="chart-container">
+
+            <canvas
+                id="delayTrendChart"
+            ></canvas>
+
+        </div>
+
+    </div>
+
+
+    <!-- Attended Status Chart -->
+
+    <div class="chart-card">
+
+        <div class="chart-header">
+
+            <h2>
+                Attended vs Unattended
+            </h2>
+
+            <p>
+                Delay records by attendance status
+            </p>
+
+        </div>
+
+        <div class="chart-container">
+
+            <canvas
+                id="attendedChart"
+            ></canvas>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =================================================
+     ADVANCED ANALYTICS - ROW 4
+     ================================================= -->
+
+<section class="charts-grid">
+
+    <!-- Top Mechanisms -->
+
+    <div class="chart-card">
+
+        <div class="chart-header">
+
+            <h2>
+                Top Delay Mechanisms
+            </h2>
+
+            <p>
+                Mechanisms contributing to recorded delay
+            </p>
+
+        </div>
+
+        <div class="chart-container">
+
+            <canvas
+                id="mechanismChart"
+            ></canvas>
+
+        </div>
+
+    </div>
+
+
+    <!-- Top Machines -->
+
+    <div class="chart-card">
+
+        <div class="chart-header">
+
+            <h2>
+                Top Delay Machines
+            </h2>
+
+            <p>
+                Machines with the highest recorded delay
+            </p>
+
+        </div>
+
+        <div class="chart-container">
+
+            <canvas
+                id="topMachineChart"
+            ></canvas>
+
+        </div>
+
+    </div>
+
+</section>
+
+        <!-- =================================================
+             SEARCH DELAY RECORDS
+             ================================================= -->
+
+        <section class="search-card">
+
+            <h2>
+                Search Delay Records
+            </h2>
+
+
+            <p class="description">
+
+                Select a battery and date to view
+                detailed delay information.
+
+            </p>
+
+
+
+            <div class="search-form">
+
+
+                <!-- =================================================
+                     SEARCHABLE BATTERY
+                     ================================================= -->
+
+                <div class="form-group">
+
+                    <label for="battery">
+
+                        Battery Number
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="battery"
+                        list="batteryList"
+                        placeholder="Search battery..."
+                        autocomplete="off"
+                    >
+
+
+                    <!-- Battery suggestions will be
+                         loaded here from FastAPI -->
+
+                    <datalist id="batteryList">
+
+                    </datalist>
+
+                </div>
+
+
+
+                <!-- =================================================
+                     DATE
+                     ================================================= -->
+
+                <div class="form-group">
+
+                    <label for="date">
+
+                        Date
+
+                    </label>
+
+
+                    <input
+                        type="date"
+                        id="date"
+                        min="2018-04-20"
+                        max="2018-04-26"
+                    >
+
+                </div>
+
+
+
+                <!-- =================================================
+                     TIME
+                     ================================================= -->
+
+                <div class="form-group">
+
+                    <label for="time">
+
+                        Time
+
+                        <span>
+                            (Optional)
+                        </span>
+
+                    </label>
+
+
+                    <input
+                        type="time"
+                        id="time"
+                    >
+
+                </div>
+
+
+
+                <!-- =================================================
+                     SEARCH BUTTON
+                     ================================================= -->
+
+                <div class="form-group button-group">
+
+                    <button
+                        id="searchButton"
+                        onclick="searchDelays()"
+                    >
+
+                        Search
+
+                    </button>
+
+                </div>
+
+
+
+                <!-- =================================================
+                     HISTORY BUTTON
+                     ================================================= -->
+
+                <div class="form-group button-group">
+
+                    <button
+                        class="history-button"
+                        onclick="viewBatteryHistory()"
+                    >
+
+                        View History
+
+                    </button>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             SEARCH SUMMARY
+             ================================================= -->
+
+        <section
+            id="summarySection"
+            class="summary-grid hidden"
+        >
+
+
+            <div class="summary-card">
+
+                <h3>
+                    Total Records
+                </h3>
+
+                <p id="totalRecords">
+                    0
+                </p>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <h3>
+                    Total Delay
+                </h3>
+
+                <p id="totalDelay">
+                    0 min
+                </p>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <h3>
+                    Total Hours
+                </h3>
+
+                <p id="totalHours">
+                    0 hrs
+                </p>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <h3>
+                    Battery
+                </h3>
+
+                <p id="selectedBattery">
+                    -
+                </p>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             SEARCH RESULTS
+             ================================================= -->
+
+        <section
+            id="resultsSection"
+            class="results-card hidden"
+        >
+
+
+            <div class="results-header">
+
+                <div>
+
+                    <h2>
+                        Delay Records
+                    </h2>
+
+
+                    <p id="searchInfo">
+                    </p>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="table-container">
+
+                <table>
+
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Date
+                            </th>
+
+                            <th>
+                                Shift
+                            </th>
+
+                            <th>
+                                Battery
+                            </th>
+
+                            <th>
+                                Machine
+                            </th>
+
+                            <th>
+                                Mechanism
+                            </th>
+
+                            <th>
+                                Agency
+                            </th>
+
+                            <th>
+                                Start
+                            </th>
+
+                            <th>
+                                End
+                            </th>
+
+                            <th>
+                                Delay
+                            </th>
+
+                            <th>
+                                Attended
+                            </th>
+
+                            <th>
+                                Remark
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+
+                    <tbody id="resultsBody">
+
+                    </tbody>
+
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             ERROR MESSAGE
+             ================================================= -->
+
+        <div
+            id="errorMessage"
+            class="error hidden"
+        ></div>
+
+
+
+        <!-- =================================================
+             LOADING
+             ================================================= -->
+
+        <div
+            id="loading"
+            class="loading hidden"
+        >
+
+            Loading...
+
+        </div>
+
+
+    </main>
+
+
+
+    <!-- =====================================================
+         FOOTER
+         ===================================================== -->
+
+    <footer>
+
+        <p>
+            Coke Oven Battery Delay Monitoring System
+        </p>
+
+        <p>
+            Developed for industrial delay monitoring
+        </p>
+
+    </footer>
+
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+         ===================================================== -->
+
+    <script src="script.js"></script>
+
+
+</body>
+
+</html>

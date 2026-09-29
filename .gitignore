@@ -1,0 +1,41 @@
+# Python virtual environment
+venv/
+.venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Environment variables / secrets
+.env
+.env.*
+!.env.example
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# MySQL / database dumps
+*.sql
+*.sqlite
+*.db
+
+# Python test/cache
+.pytest_cache/
+.mypy_cache/
+
+# Generated data
+data/prepared_delay_records.csv
+data/cleaned_delay_records.csv
+
+# Excel temporary/lock files
+~$*.xlsm
+~$*.xlsx
